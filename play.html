@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Player</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#6a11cb,#2575fc);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.player{
+    width:370px;
+    background:#fff;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+
+.player h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.cover{
+    width:200px;
+    height:200px;
+    margin:auto;
+    border-radius:50%;
+    overflow:hidden;
+    border:5px solid #2575fc;
+}
+
+.cover img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.song-info{
+    text-align:center;
+    margin:20px 0;
+}
+
+.song-info h3{
+    font-size:22px;
+}
+
+.song-info p{
+    color:#666;
+}
+
+.progress{
+    width:100%;
+    margin:15px 0;
+}
+
+#progressBar{
+    width:100%;
+}
+
+.time{
+    display:flex;
+    justify-content:space-between;
+    font-size:14px;
+}
+
+.controls{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-top:20px;
+}
+
+.controls button{
+    width:55px;
+    height:55px;
+    border:none;
+    border-radius:50%;
+    margin:0 10px;
+    cursor:pointer;
+    font-size:22px;
+    background:#2575fc;
+    color:white;
+}
+
+.controls button:hover{
+    background:#0f4fcf;
+}
+
+.volume{
+    margin-top:20px;
+}
+
+.volume input{
+    width:100%;
+}
+
+.playlist{
+    margin-top:20px;
+    max-height:150px;
+    overflow-y:auto;
+}
+
+.playlist h4{
+    margin-bottom:10px;
+}
+
+.playlist ul{
+    list-style:none;
+}
+
+.playlist li{
+    padding:10px;
+    background:#eee;
+    margin-bottom:5px;
+    cursor:pointer;
+    border-radius:8px;
+}
+
+.playlist li:hover{
+    background:#2575fc;
+    color:white;
+}
+
+.active{
+    background:#2575fc !important;
+    color:white;
+}
+</style>
+
+</head>
+<body>
+
+<div class="player">
+
+<h2>🎵 Music Player</h2>
+
+<div class="cover">
+<img src="https://picsum.photos/300" id="cover">
+</div>
+
+<div class="song-info">
+<h3 id="title">Song Name</h3>
+<p id="artist">Artist</p>
+</div>
+
+<div class="progress">
+<input type="range" id="progressBar" value="0">
+<div class="time">
+<span id="currentTime">0:00</span>
+<span id="duration">0:00</span>
+</div>
+</div>
+
+<div class="controls">
+<button id="prev">⏮</button>
+<button id="play">▶</button>
+<button id="next">⏭</button>
+</div>
+
+<div class="volume">
+<label>🔊 Volume</label>
+<input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+</div>
+
+<div class="playlist">
+<h4>Playlist</h4>
+<ul id="playlist"></ul>
+</div>
+
+<audio id="audio"></audio>
+
+</div>
+
+<script>
+
+const songs=[
+{
+title:"Dream",
+artist:"Artist One",
+src:"songs/song1.mp3"
+},
+{
+title:"Nature",
+artist:"Artist Two",
+src:"songs/song2.mp3"
+},
+{
+title:"Summer",
+artist:"Artist Three",
+src:"songs/song3.mp3"
+}
+];
+
+const audio=document.getElementById("audio");
+
+const playBtn=document.getElementById("play");
+
+const nextBtn=document.getElementById("next");
+
+const prevBtn=document.getElementById("prev");
+
+const title=document.getElementById("title");
+
+const artist=document.getElementById("artist");
+
+const progress=document.getElementById("progressBar");
+
+const currentTime=document.getElementById("currentTime");
+
+const duration=document.getElementById("duration");
+
+const volume=document.getElementById("volume");
+
+const playlist=document.getElementById("playlist");
+
+let songIndex=0;
+
+function loadSong(index){
+
+audio.src=songs[index].src;
+
+title.innerText=songs[index].title;
+
+artist.innerText=songs[index].artist;
+
+highlight();
+
+}
+
+loadSong(songIndex);
+
+function playSong(){
+
+audio.play();
+
+playBtn.innerHTML="⏸";
+
+}
+
+function pauseSong(){
+
+audio.pause();
+
+playBtn.innerHTML="▶";
+
+}
+
+playBtn.onclick=()=>{
+
+if(audio.paused){
+
+playSong();
+
+}
+
+else{
+
+pauseSong();
+
+}
+
+};
+
+nextBtn.onclick=()=>{
+
+songIndex++;
+
+if(songIndex>=songs.length){
+
+songIndex=0;
+
+}
+
+loadSong(songIndex);
+
+playSong();
+
+};
+
+prevBtn.onclick=()=>{
+
+songIndex--;
+
+if(songIndex<0){
+
+songIndex=songs.length-1;
+
+}
+
+loadSong(songIndex);
+
+playSong();
+
+};
+
+audio.addEventListener("loadedmetadata",()=>{
+
+progress.max=Math.floor(audio.duration);
+
+duration.innerText=format(audio.duration);
+
+});
+
+audio.addEventListener("timeupdate",()=>{
+
+progress.value=Math.floor(audio.currentTime);
+
+currentTime.innerText=format(audio.currentTime);
+
+});
+
+progress.oninput=()=>{
+
+audio.currentTime=progress.value;
+
+};
+
+volume.oninput=()=>{
+
+audio.volume=volume.value;
+
+};
+
+audio.addEventListener("ended",()=>{
+
+songIndex++;
+
+if(songIndex>=songs.length){
+
+songIndex=0;
+
+}
+
+loadSong(songIndex);
+
+playSong();
+
+});
+
+function format(time){
+
+let min=Math.floor(time/60);
+
+let sec=Math.floor(time%60);
+
+if(sec<10) sec="0"+sec;
+
+return min+":"+sec;
+
+}
+
+songs.forEach((song,index)=>{
+
+let li=document.createElement("li");
+
+li.innerHTML=song.title+" - "+song.artist;
+
+li.onclick=()=>{
+
+songIndex=index;
+
+loadSong(songIndex);
+
+playSong();
+
+};
+
+playlist.appendChild(li);
+
+});
+
+function highlight(){
+
+let items=document.querySelectorAll("li");
+
+items.forEach(item=>item.classList.remove("active"));
+
+items[songIndex].classList.add("active");
+
+}
+
+</script>
+
+</body>
+</html>
